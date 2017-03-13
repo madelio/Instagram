@@ -17,7 +17,6 @@ class HomeViewController: UIViewController, UIImagePickerControllerDelegate, UIN
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         self.tableView.delegate = self
         self.tableView.dataSource = self
         
@@ -29,20 +28,14 @@ class HomeViewController: UIViewController, UIImagePickerControllerDelegate, UIN
         query.findObjectsInBackground { (posts: [PFObject]?, error: Error?) -> Void in
             if let posts = posts {
                 // do something with the array of object returned by the call
+                
                 self.instaPosts = posts
+                self.tableView.reloadData()
+                
             } else {
                 print(error?.localizedDescription)
             }
-            if (self.instaPosts == nil) {
-                print("instaPosts is nil")
-            } else {
-                print(self.instaPosts)
-            }
-            print(self.instaPosts)
-
         }
-        
-        tableView.reloadData()
         // Do any additional setup after loading the view.
     }
 
@@ -76,12 +69,11 @@ class HomeViewController: UIViewController, UIImagePickerControllerDelegate, UIN
         
     }
     
-    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        
+
         let cell = tableView.dequeueReusableCell(withIdentifier: "InstaCell", for: indexPath) as! InstaCell
         
-        cell.currPost = instaPosts?[indexPath.row]
+        cell.currPost = instaPosts[indexPath.row]
         print(cell.currPost)
         
         return cell

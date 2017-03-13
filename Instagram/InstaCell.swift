@@ -14,12 +14,18 @@ class InstaCell: UITableViewCell {
     @IBOutlet weak var timeStampLabel: UILabel!
     @IBOutlet weak var captionLabel: UILabel!
     @IBOutlet weak var postImage: UIImageView!
-    var currPost: PFObject!
+    var currPost: PFObject! {
+        didSet {
+               postImage.image = currPost.object(forKey: "media") as! UIImage?
+               captionLabel.text = currPost.object(forKey: "caption") as? String
+            
+        }
+    }
+    
+    
     
     override func awakeFromNib() {
         super.awakeFromNib()
-        postImage.image = currPost.object(forKey: "media") as! UIImage?
-        captionLabel.text = currPost.object(forKey: "caption") as! String
         
         
         // Initialization code
