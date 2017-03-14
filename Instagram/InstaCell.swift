@@ -11,14 +11,20 @@ import Parse
 
 class InstaCell: UITableViewCell {
 
-    @IBOutlet weak var timeStampLabel: UILabel!
     @IBOutlet weak var captionLabel: UILabel!
     @IBOutlet weak var postImage: UIImageView!
     var currPost: PFObject! {
         didSet {
-               postImage.image = currPost.object(forKey: "media") as! UIImage?
-               captionLabel.text = currPost.object(forKey: "caption") as? String
+            if let pic = currPost.object(forKey: "media") as? PFFile {
+                pic.getDataInBackground(block: { (image: Data?, error: Error?) in
+                    if (error == nil) {
+                        let instaImage = UIImage(data: image!)
+                        self.postImage.image = instaImage
+                    }
+                })
+            }
             
+            captionLabel.text = currPost.object(forKey: "caption") as? String
         }
     }
     

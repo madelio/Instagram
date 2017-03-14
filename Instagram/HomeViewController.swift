@@ -9,11 +9,13 @@
 import UIKit
 import Parse
 
-class HomeViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITableViewDelegate, UITableViewDataSource {
+class HomeViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UITableViewDelegate, UITableViewDataSource, CaptionDelegate {
     
 
     @IBOutlet weak var tableView: UITableView!
-    var instaPosts: [PFObject]!
+    var instaPosts: [PFObject] = []
+    var captionPost: String!
+    var imagePost: UIImage!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,7 +31,11 @@ class HomeViewController: UIViewController, UIImagePickerControllerDelegate, UIN
             if let posts = posts {
                 // do something with the array of object returned by the call
                 
-                self.instaPosts = posts
+                for i in (0...posts.count-1).reversed() {
+                    self.instaPosts.append(posts[i])
+                }
+                
+               // self.instaPosts = posts
                 self.tableView.reloadData()
                 
             } else {
@@ -43,26 +49,40 @@ class HomeViewController: UIViewController, UIImagePickerControllerDelegate, UIN
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
     func imagePickerController(_ picker: UIImagePickerController,
                                didFinishPickingMediaWithInfo info: [String : Any]) {
         // Get the image captured by the UIImagePickerController
         let originalImage = info[UIImagePickerControllerOriginalImage] as! UIImage
        // let editedImage = info[UIImagePickerControllerEditedImage] as! UIImage
-       
-        InstaPost.postUserImage(image: originalImage, withCaption: "") { (success: Bool, error: Error?) in
-            
-        }
-        tableView.reloadData()
+        
+        let newSize = CGSize(width: 300, height: 300)
+        imagePost = resizeImg(image: originalImage, newSize: newSize)
+        dismiss(animated: false, completion: nil)
+        performSegue(withIdentifier: "postSegue", sender: nil)
+        
         // Do something with the images (based on your use case)
         
         // Dismiss UIImagePickerController to go back to your original view controller
-        dismiss(animated: true, completion: nil)
+    
+    }
+    
+    func addCaption(_ caption: String) {
+        
+        captionPost = caption
+       
+        let posted = InstaPost.postUserImage(image: imagePost, withCaption: caption) { (success: Bool, error: Error?) in
+            print("picture posted")
+            self.tableView.reloadData()
+        }
+        
+        self.instaPosts.insert(posted, at: 0)
+        
     }
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if self.instaPosts != nil {
-            print("COUNT IS \(self.instaPosts!.count)")
-            return self.instaPosts!.count
+            return self.instaPosts.count
         } else {
             return 0
         }
@@ -74,16 +94,15 @@ class HomeViewController: UIViewController, UIImagePickerControllerDelegate, UIN
         let cell = tableView.dequeueReusableCell(withIdentifier: "InstaCell", for: indexPath) as! InstaCell
         
         cell.currPost = instaPosts[indexPath.row]
-        print(cell.currPost)
         
         return cell
     }
 
     @IBAction func logoutUser(_ sender: Any) {
+        
         PFUser.logOutInBackground { (error: Error?) in
-            
+            print ("logged out")
         }
-        self.dismiss(animated: true, completion: nil)
     }
     @IBAction func addPost(_ sender: Any) {
         let vc = UIImagePickerController()
@@ -92,14 +111,30 @@ class HomeViewController: UIViewController, UIImagePickerControllerDelegate, UIN
         vc.sourceType = UIImagePickerControllerSourceType.photoLibrary
         self.present(vc, animated: true, completion: nil)
     }
-    /*
+    
+    func resizeImg(image: UIImage, newSize: CGSize) -> UIImage {
+        let resizeImageView = UIImageView(frame: CGRect(x: 0, y: 0, width: newSize.width, height: newSize.height))
+        resizeImageView.contentMode = UIViewContentMode.scaleAspectFill
+        resizeImageView.image = image
+        
+        UIGraphicsBeginImageContext(resizeImageView.frame.size)
+        resizeImageView.layer.render(in: UIGraphicsGetCurrentContext()!)
+        let newImage = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return newImage!
+    }
+    
     // MARK: - Navigation
 
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
+        // Get the new view controller using
+        if segue.identifier == "postSegue" {
+            let captionVC = segue.destination as! CaptionViewController
+            captionVC.delegate = self
+        }
         // Pass the selected object to the new view controller.
+        
     }
-    */
+
 
 }

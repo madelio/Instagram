@@ -23,7 +23,7 @@ class InstaPost: NSObject {
      - parameter caption: Caption text input by the user
      - parameter completion: Block to be executed after save operation is complete
      */
-    class func postUserImage(image: UIImage?, withCaption caption: String?, withCompletion completion: PFBooleanResultBlock?) {
+    class func postUserImage(image: UIImage?, withCaption caption: String?, withCompletion completion: PFBooleanResultBlock?) -> PFObject {
         // Create Parse object PFObject
         let post = PFObject(className: "Post")
         
@@ -42,7 +42,10 @@ class InstaPost: NSObject {
         // Save object (following function will save the object in Parse asynchronously)
         post.saveInBackground(block: completion)
         print("post saved")
+        
+        return post
     }
+    
     
     /**
      Method to convert UIImage to PFFile
